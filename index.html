@@ -3,17 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnóstico Digital PyME</title>
+<title>Glen Soto - IA para Empresas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:20px}
 .container{max-width:720px;margin:0 auto}
-header{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border-radius:14px;padding:28px 32px;margin-bottom:24px;text-align:center}
-header h1{font-size:1.5rem;margin-bottom:6px}
-header p{opacity:.85;font-size:.9rem}
-.section{background:white;border-radius:12px;padding:24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
-.section-title{font-size:1.05rem;font-weight:700;color:#1e3a5f;border-left:4px solid #2563eb;padding-left:12px;margin-bottom:20px}
+
+header{background:linear-gradient(135deg,#1e3a5f,#2563eb,#7c3aed);color:white;border-radius:14px;padding:28px 32px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,0.08) 0%,transparent 60%),radial-gradient(circle at 10% 80%,rgba(255,255,255,0.05) 0%,transparent 50%);pointer-events:none}
+header h1{font-size:1.5rem;margin-bottom:6px;font-weight:800;position:relative}
+header p{opacity:.88;font-size:.88rem;max-width:500px;margin:0 auto;position:relative}
+.brand-tag{display:inline-block;background:rgba(255,255,255,0.18);border-radius:99px;padding:4px 14px;font-size:.75rem;font-weight:700;letter-spacing:1px;margin-bottom:12px;backdrop-filter:blur(4px)}
+
+/* PROGRESS */
+.progress-wrap{background:white;border-radius:12px;padding:16px 20px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.progress-info{display:flex;justify-content:space-between;margin-bottom:8px}
+.progress-label{font-size:.83rem;font-weight:600;color:#1e3a5f}
+.progress-pct{font-size:.83rem;color:#7c3aed;font-weight:700}
+.progress-bar{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:99px;transition:width .4s ease}
+.dots{display:flex;gap:8px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+.dot{width:28px;height:8px;border-radius:99px;background:#e5e7eb;transition:all .3s;cursor:default;font-size:0}
+.dot.done{background:#16a34a}
+.dot.active{background:linear-gradient(90deg,#2563eb,#7c3aed);transform:scaleX(1.2)}
+
+/* SECTIONS */
+.section{background:white;border-radius:12px;padding:24px;margin-bottom:18px;display:none}
+.section.active{display:block;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section-header{display:flex;justify-content:space-between;align-items:center;border-left:4px solid #2563eb;padding-left:12px;margin-bottom:20px}
+.section-title{font-size:1.05rem;font-weight:700;color:#1e3a5f}
+.section-badge{background:#eff6ff;color:#2563eb;font-size:.72rem;padding:3px 10px;border-radius:99px;font-weight:700}
+
 .q-block{margin-bottom:20px}
 .q-label{display:block;font-weight:600;color:#2d3748;margin-bottom:8px;font-size:.92rem}
 .req{color:#e53e3e;margin-left:2px}
@@ -24,92 +47,161 @@ textarea{resize:vertical;min-height:80px}
 .opt{display:flex;align-items:center;gap:10px;padding:9px 13px;border:1.5px solid #dde3eb;border-radius:8px;cursor:pointer;transition:all .2s;font-size:.9rem;color:#333}
 .opt:hover{border-color:#2563eb;background:#eff6ff}
 .opt input{width:auto;flex-shrink:0;accent-color:#2563eb}
-.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .2s}
+.otro-field{margin-top:8px;display:none}
+
+/* NAV BUTTONS */
+.nav-btns{display:flex;gap:10px;margin-top:8px}
+.btn-prev{flex:1;padding:13px;background:#f1f5f9;color:#1e3a5f;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-prev:hover{background:#e2e8f0}
+.btn-next{flex:2;padding:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn-next:hover{opacity:.9}
+.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#1e3a5f,#2563eb,#7c3aed);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .2s}
 .btn-submit:hover{opacity:.9}
 .divider{height:1px;background:#e5e7eb;margin:16px 0}
-.toast{position:fixed;top:20px;right:20px;background:#16a34a;color:white;padding:14px 22px;border-radius:10px;font-weight:600;font-size:.9rem;display:none;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+/* THANK YOU */
+#thank-you{display:none;text-align:center;padding:40px 24px}
+.ty-icon{font-size:4rem;margin-bottom:16px;animation:bounce .6s ease}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+#thank-you h2{font-size:1.6rem;color:#1e3a5f;font-weight:800;margin-bottom:10px}
+#thank-you p{color:#64748b;font-size:.95rem;line-height:1.6;max-width:420px;margin:0 auto 20px}
+.ty-card{background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-radius:12px;padding:20px;margin:0 auto 20px;max-width:420px;border:1px solid #dbeafe}
+.ty-card p{color:#1e3a5f;font-size:.88rem;font-weight:600;margin:0}
+.btn-new{padding:12px 28px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;top:20px;right:20px;background:#16a34a;color:white;padding:14px 22px;border-radius:10px;font-weight:600;font-size:.9rem;display:none;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:300px}
 .toast.error{background:#dc2626}
-#admin-login-overlay{position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+
+/* ADMIN LOGIN */
+#admin-login-overlay{position:fixed;inset:0;background:rgba(15,23,42,.88);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .login-box{background:white;border-radius:16px;padding:36px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .login-box h2{color:#1e3a5f;font-size:1.3rem;margin-bottom:6px}
 .login-box p{color:#64748b;font-size:.85rem;margin-bottom:24px}
 .login-box input{margin-bottom:14px}
 .btn-login{width:100%;padding:12px;background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer}
-.btn-login:hover{opacity:.9}
 .login-error{color:#dc2626;font-size:.82rem;margin-top:8px;display:none}
 .btn-back-form{background:none;border:none;color:#2563eb;font-size:.85rem;cursor:pointer;margin-top:14px;text-decoration:underline}
+
+/* ADMIN PANEL */
 #admin-panel{display:none}
 .admin-header{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;border-radius:14px;padding:24px 28px;margin-bottom:20px}
 .admin-header h2{font-size:1.2rem;margin-bottom:4px}
 .admin-header p{opacity:.7;font-size:.82rem}
 .admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
 .stat-card{background:white;border-radius:10px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07)}
-.stat-card .num{font-size:2rem;font-weight:800;color:#2563eb}
-.stat-card .lbl{font-size:.78rem;color:#64748b;margin-top:2px}
+.stat-num{font-size:1.9rem;font-weight:800;background:linear-gradient(135deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-lbl{font-size:.75rem;color:#64748b;margin-top:2px}
 .admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 .btn-excel{background:#16a34a;color:white;border:none;border-radius:8px;padding:11px 20px;font-size:.9rem;font-weight:700;cursor:pointer;flex:1;min-width:160px}
 .btn-excel:hover{background:#15803d}
-.btn-clear{background:#dc2626;color:white;border:none;border-radius:8px;padding:11px 16px;font-size:.9rem;font-weight:700;cursor:pointer}
-.btn-clear:hover{background:#b91c1c}
-.btn-logout{background:#475569;color:white;border:none;border-radius:8px;padding:11px 16px;font-size:.9rem;font-weight:700;cursor:pointer}
-.btn-logout:hover{background:#334155}
-.responses-table-wrap{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow-x:auto}
-.responses-table-wrap h3{color:#1e3a5f;font-size:.95rem;margin-bottom:14px}
+.btn-danger{background:#dc2626;color:white;border:none;border-radius:8px;padding:11px 16px;font-size:.9rem;font-weight:700;cursor:pointer}
+.btn-muted{background:#475569;color:white;border:none;border-radius:8px;padding:11px 16px;font-size:.9rem;font-weight:700;cursor:pointer}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.chart-card{background:white;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.chart-card h4{font-size:.83rem;font-weight:700;color:#1e3a5f;margin-bottom:12px}
+.chart-card canvas{max-height:200px}
+.responses-wrap{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow-x:auto}
+.responses-wrap h3{color:#1e3a5f;font-size:.95rem;margin-bottom:14px}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
-th{background:#1e3a5f;color:white;padding:9px 12px;text-align:left;white-space:nowrap}
-td{padding:8px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+th{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;padding:9px 12px;text-align:left;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tr:hover td{background:#f8fafc}
 .empty-msg{text-align:center;color:#94a3b8;padding:30px;font-size:.9rem}
-.badge{display:inline-block;background:#eff6ff;color:#2563eb;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:700}
+.badge{display:inline-block;background:#eff6ff;color:#2563eb;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:700;cursor:pointer}
+.badge:hover{background:#dbeafe}
+
+/* DETAIL MODAL */
+#detail-modal{position:fixed;inset:0;background:rgba(15,23,42,.8);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.detail-box{background:white;border-radius:14px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;padding:28px}
+.detail-box h3{color:#1e3a5f;margin-bottom:16px;font-size:1rem}
+.detail-row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
+.detail-key{font-weight:700;color:#475569;min-width:180px;flex-shrink:0}
+.detail-val{color:#1e293b;word-break:break-word}
+.btn-close-modal{margin-top:16px;padding:10px 24px;background:#1e3a5f;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer}
+
 .admin-link{text-align:center;margin-top:10px;margin-bottom:20px}
 .admin-link button{background:none;border:none;color:#94a3b8;font-size:.78rem;cursor:pointer;text-decoration:underline}
 .admin-link button:hover{color:#2563eb}
+
+@media(max-width:500px){.charts-grid{grid-template-columns:1fr}.nav-btns{flex-direction:column}}
 </style>
 </head>
 <body>
-
 <div class="toast" id="toast"></div>
 
+<!-- LOGIN -->
 <div id="admin-login-overlay" style="display:none">
   <div class="login-box">
-    <div style="font-size:2rem;margin-bottom:10px">🔐</div>
-    <h2>Panel de Administración</h2>
-    <p>Ingresa tus credenciales para acceder a las respuestas</p>
+    <div style="font-size:2rem;margin-bottom:8px">🔐</div>
+    <h2>Panel Admin</h2>
+    <p>Glen Soto — IA para Empresas</p>
     <input type="text" id="admin-user" placeholder="Usuario" onkeydown="if(event.key==='Enter')doLogin()">
     <input type="password" id="admin-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="btn-login" onclick="doLogin()">Ingresar</button>
-    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
-    <br>
-    <button class="btn-back-form" onclick="closeLoginOverlay()">← Volver al formulario</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div><br>
+    <button class="btn-back-form" onclick="closeLogin()">← Volver al formulario</button>
   </div>
 </div>
 
+<!-- DETAIL MODAL -->
+<div id="detail-modal">
+  <div class="detail-box">
+    <h3>📋 Detalle de respuesta</h3>
+    <div id="detail-content"></div>
+    <button class="btn-close-modal" onclick="document.getElementById('detail-modal').style.display='none'">Cerrar</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
 <div id="admin-panel" class="container">
   <div class="admin-header">
     <h2>🛡️ Panel de Administración</h2>
-    <p>Gestiona y descarga todas las respuestas del formulario de diagnóstico</p>
+    <p>Glen Soto — IA para Empresas · Diagnóstico PyME</p>
   </div>
   <div class="admin-stats" id="admin-stats"></div>
-  <div class="admin-actions">
-    <button class="btn-excel" onclick="downloadExcel()">📥 Descargar todas en Excel</button>
-    <button class="btn-clear" onclick="clearData()">🗑 Limpiar datos</button>
-    <button class="btn-logout" onclick="logout()">🚪 Cerrar sesión</button>
+  <div class="charts-grid">
+    <div class="chart-card"><h4>📊 Respuestas por Sector</h4><canvas id="chart-sector"></canvas></div>
+    <div class="chart-card"><h4>🗺️ Respuestas por Provincia</h4><canvas id="chart-prov"></canvas></div>
+    <div class="chart-card"><h4>💰 Rango de Inversión</h4><canvas id="chart-inv"></canvas></div>
+    <div class="chart-card"><h4>👥 Tamaño de Empresa</h4><canvas id="chart-emp"></canvas></div>
   </div>
-  <div class="responses-table-wrap">
+  <div class="admin-actions">
+    <button class="btn-excel" onclick="downloadExcel()">📥 Descargar Excel</button>
+    <button class="btn-danger" onclick="clearData()">🗑 Limpiar datos</button>
+    <button class="btn-muted" onclick="logout()">🚪 Cerrar sesión</button>
+  </div>
+  <div class="responses-wrap">
     <h3>📋 Respuestas recibidas</h3>
-    <div id="responses-table-content"></div>
+    <div id="responses-table"></div>
   </div>
 </div>
 
+<!-- FORM VIEW -->
 <div id="form-view" class="container">
 
 <header>
-  <h1>🔍 Diagnóstico Digital para Negocios</h1>
-  <p>Este formulario nos ayuda a entender mejor tu negocio y cómo podemos apoyarte con tecnología.</p>
+  <div class="brand-tag">✦ IA PARA EMPRESAS</div>
+  <h1>Glen Soto — IA para Empresas</h1>
+  <p>Diagnóstico PyME · Cuéntanos sobre tu negocio y descubre cómo la inteligencia artificial puede transformarlo</p>
 </header>
 
-<div class="section">
-  <div class="section-title">Sección 1 — Datos Generales</div>
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span class="progress-label" id="prog-label">Sección 1 de 6</span>
+    <span class="progress-pct" id="prog-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="dots" id="dots"></div>
+</div>
+
+<!-- SECCIÓN 1 -->
+<div class="section active" id="sec1">
+  <div class="section-header">
+    <div class="section-title">Datos Generales</div>
+    <span class="section-badge">1 / 6</span>
+  </div>
   <div class="q-block">
     <label class="q-label">1. Nombre del negocio <span class="req">*</span></label>
     <input type="text" id="q1" placeholder="Ej. Soda La Familiar">
@@ -170,13 +262,19 @@ tr:hover td{background:#f8fafc}
       <label class="opt"><input type="checkbox" value="Sistema contable"> Sistema contable</label>
       <label class="opt"><input type="checkbox" value="POS/caja registradora"> POS/caja registradora</label>
       <label class="opt"><input type="checkbox" value="Ninguna"> Ninguna</label>
-      <label class="opt"><input type="checkbox" value="Otra"> Otra</label>
+      <label class="opt"><input type="checkbox" value="Otra" onchange="toggleOtro(this,'otro_q7')"> Otra</label>
+      <div class="otro-field" id="otro_q7"><input type="text" id="otro_q7_txt" placeholder="¿Cuál herramienta usan?"></div>
     </div>
   </div>
+  <div class="nav-btns"><button class="btn-next" onclick="nextSec(1)">Siguiente →</button></div>
 </div>
 
-<div class="section">
-  <div class="section-title">Sección 2 — Operación Diaria</div>
+<!-- SECCIÓN 2 -->
+<div class="section" id="sec2">
+  <div class="section-header">
+    <div class="section-title">Operación Diaria</div>
+    <span class="section-badge">2 / 6</span>
+  </div>
   <div class="q-block">
     <label class="q-label">8. ¿Cuánto tiempo dedica diariamente a responder clientes por WhatsApp? <span class="req">*</span></label>
     <div class="radio-group">
@@ -232,10 +330,18 @@ tr:hover td{background:#f8fafc}
       <label class="opt"><input type="radio" name="q13" value="No guardamos nada"> No guardamos nada</label>
     </div>
   </div>
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="prevSec(2)">← Atrás</button>
+    <button class="btn-next" onclick="nextSec(2)">Siguiente →</button>
+  </div>
 </div>
 
-<div class="section">
-  <div class="section-title">Sección 3 — Dolores y Frustraciones</div>
+<!-- SECCIÓN 3 -->
+<div class="section" id="sec3">
+  <div class="section-header">
+    <div class="section-title">Dolores y Frustraciones</div>
+    <span class="section-badge">3 / 6</span>
+  </div>
   <div class="q-block">
     <label class="q-label">14. ¿Cuál es el problema que más le quita el sueño en su negocio hoy? <span class="req">*</span></label>
     <textarea id="q14" placeholder="Descríbalo con sus propias palabras..."></textarea>
@@ -287,10 +393,18 @@ tr:hover td{background:#f8fafc}
     <label class="q-label">20. ¿Sus competidores hacen algo mejor que ustedes? <span style="color:#888;font-weight:400">(opcional)</span></label>
     <textarea id="q20" placeholder="Opcional..."></textarea>
   </div>
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="prevSec(3)">← Atrás</button>
+    <button class="btn-next" onclick="nextSec(3)">Siguiente →</button>
+  </div>
 </div>
 
-<div class="section">
-  <div class="section-title">Sección 4 — Datos que Genera el Negocio</div>
+<!-- SECCIÓN 4 -->
+<div class="section" id="sec4">
+  <div class="section-header">
+    <div class="section-title">Datos que Genera el Negocio</div>
+    <span class="section-badge">4 / 6</span>
+  </div>
   <div class="q-block">
     <label class="q-label">21. ¿Qué tipo de datos genera su negocio actualmente? (puede marcar varios)</label>
     <div class="check-group" id="q21">
@@ -368,10 +482,18 @@ tr:hover td{background:#f8fafc}
     <label class="q-label">28. Si tuvieran todos sus datos organizados automáticamente, ¿qué decisión tomarían primero? <span class="req">*</span></label>
     <textarea id="q28" placeholder="Esta respuesta es muy importante para nosotros..."></textarea>
   </div>
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="prevSec(4)">← Atrás</button>
+    <button class="btn-next" onclick="nextSec(4)">Siguiente →</button>
+  </div>
 </div>
 
-<div class="section">
-  <div class="section-title">Sección 5 — Personas y Cultura</div>
+<!-- SECCIÓN 5 -->
+<div class="section" id="sec5">
+  <div class="section-header">
+    <div class="section-title">Personas y Cultura</div>
+    <span class="section-badge">5 / 6</span>
+  </div>
   <div class="q-block">
     <label class="q-label">29. ¿Cómo describirían la actitud de su equipo ante la tecnología? <span class="req">*</span></label>
     <div class="radio-group">
@@ -419,10 +541,18 @@ tr:hover td{background:#f8fafc}
       <label class="opt"><input type="checkbox" value="Ninguno"> Ninguno</label>
     </div>
   </div>
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="prevSec(5)">← Atrás</button>
+    <button class="btn-next" onclick="nextSec(5)">Siguiente →</button>
+  </div>
 </div>
 
-<div class="section">
-  <div class="section-title">Sección 6 — Inversión y Expectativas</div>
+<!-- SECCIÓN 6 -->
+<div class="section" id="sec6">
+  <div class="section-header">
+    <div class="section-title">Inversión y Expectativas</div>
+    <span class="section-badge">6 / 6</span>
+  </div>
   <div class="q-block">
     <label class="q-label">34. ¿Tienen presupuesto para tecnología este año? <span class="req">*</span></label>
     <div class="radio-group">
@@ -467,83 +597,94 @@ tr:hover td{background:#f8fafc}
     <label class="q-label">40. Correo electrónico <span class="req">*</span></label>
     <input type="email" id="q40" placeholder="correo@ejemplo.com">
   </div>
-  <button class="btn-submit" onclick="submitForm()">✅ Enviar Formulario</button>
+  <div class="nav-btns">
+    <button class="btn-prev" onclick="prevSec(6)">← Atrás</button>
+    <button class="btn-submit" onclick="submitForm()">✅ Enviar Diagnóstico</button>
+  </div>
+</div>
+
+<!-- THANK YOU -->
+<div id="thank-you">
+  <div class="ty-icon">🎉</div>
+  <h2>¡Gracias por completar el diagnóstico!</h2>
+  <p>Hemos recibido las respuestas de <strong id="ty-name"></strong>. En Glen Soto — IA para Empresas analizaremos tu situación y nos pondremos en contacto contigo muy pronto.</p>
+  <div class="ty-card">
+    <p>🤖 Estamos listos para ayudarte a transformar tu negocio con inteligencia artificial. ¡El primer paso ya está dado!</p>
+  </div>
+  <button class="btn-new" onclick="newResponse()">📋 Llenar otro diagnóstico</button>
 </div>
 
 <div class="admin-link">
-  <button onclick="showLoginOverlay()">🔐 Acceso administrador</button>
+  <button onclick="showLogin()">🔐 Acceso administrador</button>
 </div>
 
-</div>
+</div><!-- /form-view -->
 
 <script>
-const ADMIN_USER  = 'admin';
-const ADMIN_PASS  = 'DigiPyme2025';
-const STORE_KEY   = 'diagnostico_pyme_v2';
-const SESSION_KEY = 'admin_session_active';
-const SHEET_URL   = 'https://script.google.com/macros/s/AKfycbxJNsMABH4BZ8d48Qex17wbMNSvGhcqWOrRpVJV38_JlmYh3j_w7w9UA5MLdXKcRWTE/exec';
+const ADMIN_USER='admin', ADMIN_PASS='DigiPyme2025';
+const STORE_KEY='gs_diagnostico_v3', SESSION_KEY='gs_admin_session';
+const SHEET_URL='https://script.google.com/macros/s/AKfycbxJNsMABH4BZ8d48Qex17wbMNSvGhcqWOrRpVJV38_JlmYh3j_w7w9UA5MLdXKcRWTE/exec';
+const TOTAL_SECS=6;
+let currentSec=1;
+let chartInstances={};
 
-function showLoginOverlay(){document.getElementById('admin-login-overlay').style.display='flex';document.getElementById('admin-user').value='';document.getElementById('admin-pass').value='';document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('admin-user').focus(),100)}
-function closeLoginOverlay(){document.getElementById('admin-login-overlay').style.display='none'}
-function doLogin(){const u=document.getElementById('admin-user').value.trim(),p=document.getElementById('admin-pass').value.trim();if(u===ADMIN_USER&&p===ADMIN_PASS){sessionStorage.setItem(SESSION_KEY,'1');document.getElementById('admin-login-overlay').style.display='none';showAdminPanel()}else{document.getElementById('login-error').style.display='block';document.getElementById('admin-pass').value=''}}
-function logout(){sessionStorage.removeItem(SESSION_KEY);document.getElementById('admin-panel').style.display='none';document.getElementById('form-view').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
-
-function showAdminPanel(){document.getElementById('form-view').style.display='none';document.getElementById('admin-panel').style.display='block';renderAdminPanel();window.scrollTo({top:0,behavior:'smooth'})}
-
-function renderAdminPanel(){
-  const all=loadResponses();
-  const sectors={},provs={};
-  all.forEach(r=>{if(r['Sector'])sectors[r['Sector']]=(sectors[r['Sector']]||0)+1;if(r['Provincia'])provs[r['Provincia']]=(provs[r['Provincia']]||0)+1});
-  const topS=Object.entries(sectors).sort((a,b)=>b[1]-a[1])[0];
-  const topP=Object.entries(provs).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('admin-stats').innerHTML=`
-    <div class="stat-card"><div class="num">${all.length}</div><div class="lbl">Respuestas totales</div></div>
-    <div class="stat-card"><div class="num">${Object.keys(sectors).length}</div><div class="lbl">Sectores distintos</div></div>
-    <div class="stat-card"><div class="num" style="font-size:1.1rem">${topS?topS[0]:'—'}</div><div class="lbl">Sector más frecuente</div></div>
-    <div class="stat-card"><div class="num" style="font-size:1.1rem">${topP?topP[0]:'—'}</div><div class="lbl">Provincia más frecuente</div></div>`;
-  const wrap=document.getElementById('responses-table-content');
-  if(!all.length){wrap.innerHTML='<div class="empty-msg">📭 Aún no hay respuestas registradas.</div>';return}
-  const cols=['Fecha/Hora','Nombre negocio','Sector','Provincia','Empleados','Nombre contacto','WhatsApp contacto','Correo contacto'];
-  let html='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>Detalles</th></tr></thead><tbody>';
-  all.forEach((r,i)=>{html+='<tr>'+cols.map(c=>`<td title="${r[c]||''}">${r[c]||'—'}</td>`).join('')+`<td><span class="badge" style="cursor:pointer" onclick="showDetail(${i})">Ver todo</span></td></tr>`});
-  html+='</tbody></table>';
-  wrap.innerHTML=html;
+// ── PROGRESS ──
+function initDots(){
+  const d=document.getElementById('dots');
+  d.innerHTML=[...Array(TOTAL_SECS)].map((_,i)=>`<div class="dot ${i===0?'active':''}" id="dot${i+1}"></div>`).join('');
+}
+function updateProgress(sec){
+  const pct=Math.round(((sec-1)/TOTAL_SECS)*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-label').textContent=`Sección ${sec} de ${TOTAL_SECS}`;
+  for(let i=1;i<=TOTAL_SECS;i++){
+    const d=document.getElementById('dot'+i);
+    d.className='dot'+(i<sec?' done':i===sec?' active':'');
+  }
 }
 
-function showDetail(i){const r=loadResponses()[i];alert(Object.entries(r).map(([k,v])=>`${k}:\n${v||'—'}`).join('\n\n'))}
+// ── NAVIGATION ──
+function showSec(n){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec'+n).classList.add('active');
+  currentSec=n;
+  updateProgress(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-function loadResponses(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]')}catch{return[]}}
-function saveResponses(arr){localStorage.setItem(STORE_KEY,JSON.stringify(arr))}
+const SEC_REQUIRED={
+  1:[()=>val('q1'),()=>val('q2'),()=>val('q3'),()=>getRadio('q4'),()=>getRadio('q5')],
+  2:[()=>getRadio('q8'),()=>getRadio('q9'),()=>getRadio('q10'),()=>getRadio('q11'),()=>getRadio('q12'),()=>getRadio('q13')],
+  3:[()=>val('q14'),()=>getRadio('q15'),()=>getRadio('q16'),()=>getRadio('q17'),()=>val('q19')],
+  4:[()=>getRadio('q23'),()=>getRadio('q24'),()=>getRadio('q25'),()=>getRadio('q26'),()=>getRadio('q27'),()=>val('q28')],
+  5:[()=>getRadio('q29'),()=>getRadio('q30'),()=>getRadio('q31'),()=>getRadio('q32')],
+  6:[()=>getRadio('q34'),()=>getRadio('q35'),()=>val('q36'),()=>getRadio('q37'),()=>val('q38'),()=>val('q39'),()=>val('q40')]
+};
+
+function nextSec(n){
+  const checks=SEC_REQUIRED[n]||[];
+  for(const fn of checks){if(!fn()){showToast('⚠️ Por favor completa todos los campos requeridos',true);return}}
+  if(n<TOTAL_SECS) showSec(n+1);
+}
+function prevSec(n){if(n>1)showSec(n-1)}
+
+// ── HELPERS ──
 function getRadio(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:''}
 function getChecks(id){return[...document.querySelectorAll(`#${id} input[type=checkbox]:checked`)].map(c=>c.value).join(', ')}
 function val(id){return(document.getElementById(id)?.value||'').trim()}
+function toggleOtro(cb,id){document.getElementById(id).style.display=cb.checked?'block':'none';if(!cb.checked)document.getElementById(id+'_txt').value=''}
 function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' error':'');t.style.display='block';setTimeout(()=>t.style.display='none',3500)}
 
-const REQUIRED_FIELDS={
-  'Nombre negocio':()=>val('q1'),'Sector':()=>val('q2'),'Provincia':()=>val('q3'),
-  'Empleados':()=>getRadio('q4'),'Factura electrónica':()=>getRadio('q5'),
-  'Tiempo WhatsApp':()=>getRadio('q8'),'Coordinación':()=>getRadio('q9'),
-  'Consultas/semana':()=>getRadio('q10'),'Facturación':()=>getRadio('q11'),
-  'Horas perdidas':()=>getRadio('q12'),'Datos históricos':()=>getRadio('q13'),
-  'Problema principal':()=>val('q14'),'Clientes perdidos':()=>getRadio('q15'),
-  'Etapa pérdida':()=>getRadio('q16'),'Problemas institucionales':()=>getRadio('q17'),
-  'Tarea sola':()=>val('q19'),'Frecuencia análisis':()=>getRadio('q23'),
-  'Producto rentable':()=>getRadio('q24'),'Clientes frecuentes':()=>getRadio('q25'),
-  'Tiempo ventas':()=>getRadio('q26'),'Pérdida info':()=>getRadio('q27'),
-  'Decisión con datos':()=>val('q28'),'Actitud equipo':()=>getRadio('q29'),
-  'Tecnología previa':()=>getRadio('q30'),'Decisor TI':()=>getRadio('q31'),
-  'Tiempo disponible':()=>getRadio('q32'),'Presupuesto':()=>getRadio('q34'),
-  'Inversión mensual':()=>getRadio('q35'),'Resultado esperado':()=>val('q36'),
-  'Tiempo resultados':()=>getRadio('q37'),'Nombre contacto':()=>val('q38'),
-  'WhatsApp':()=>val('q39'),'Correo':()=>val('q40'),
-};
-
+// ── COLLECT ──
 function collectData(){
+  const otraHerr=val('otro_q7_txt');
   return{
     'Fecha/Hora':new Date().toLocaleString('es-CR'),
     'Nombre negocio':val('q1'),'Sector':val('q2'),'Provincia':val('q3'),
     'Empleados':getRadio('q4'),'Factura electrónica':getRadio('q5'),
-    'Canales de venta':getChecks('q6'),'Herramientas digitales':getChecks('q7'),
+    'Canales de venta':getChecks('q6'),
+    'Herramientas digitales':getChecks('q7')+(otraHerr?' | Otra: '+otraHerr:''),
     'Tiempo WhatsApp diario':getRadio('q8'),'Coordinación citas/pedidos':getRadio('q9'),
     'Consultas por semana':getRadio('q10'),'Facturación/cotizaciones':getRadio('q11'),
     'Horas perdidas semana':getRadio('q12'),'Datos históricos':getRadio('q13'),
@@ -561,48 +702,121 @@ function collectData(){
     'Presupuesto tecnología':getRadio('q34'),'Inversión mensual':getRadio('q35'),
     'Resultado esperado':val('q36'),'Tiempo para ver resultados':getRadio('q37'),
     'Nombre contacto':val('q38'),'WhatsApp contacto':val('q39'),'Correo contacto':val('q40'),
-  };
+  }
 }
 
+// ── SUBMIT ──
 async function submitForm(){
-  for(const[label,fn]of Object.entries(REQUIRED_FIELDS)){
-    if(!fn()){showToast(`⚠️ Campo requerido: "${label}"`,true);return}
-  }
+  const checks=SEC_REQUIRED[6]||[];
+  for(const fn of checks){if(!fn()){showToast('⚠️ Completa todos los campos requeridos',true);return}}
   const data=collectData();
   const all=loadResponses();all.push(data);saveResponses(all);
   const btn=document.querySelector('.btn-submit');
   btn.disabled=true;btn.textContent='⏳ Enviando...';
   try{
     await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    showToast('✅ Respuesta enviada correctamente. ¡Gracias!');
-  }catch(err){
-    showToast('⚠️ Guardado localmente. Sin conexión a la nube.',true);
-  }
-  btn.disabled=false;btn.textContent='✅ Enviar Formulario';
-  resetForm();window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){}
+  btn.disabled=false;btn.textContent='✅ Enviar Diagnóstico';
+  // Show thank you
+  document.getElementById('sec6').classList.remove('active');
+  document.getElementById('thank-you').style.display='block';
+  document.getElementById('ty-name').textContent=val('q38')||'tu negocio';
+  document.querySelector('.progress-wrap').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function newResponse(){
+  document.getElementById('thank-you').style.display='none';
+  document.querySelector('.progress-wrap').style.display='block';
+  resetForm();showSec(1);
 }
 
 function resetForm(){
   document.querySelectorAll('input[type=text],input[type=email],input[type=tel],textarea,select').forEach(el=>{if(el.tagName==='SELECT')el.selectedIndex=0;else el.value=''});
   document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(el=>el.checked=false);
+  document.querySelectorAll('.otro-field').forEach(el=>el.style.display='none');
+}
+
+// ── STORAGE ──
+function loadResponses(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]')}catch{return[]}}
+function saveResponses(arr){localStorage.setItem(STORE_KEY,JSON.stringify(arr))}
+
+// ── AUTH ──
+function showLogin(){document.getElementById('admin-login-overlay').style.display='flex';setTimeout(()=>document.getElementById('admin-user').focus(),100)}
+function closeLogin(){document.getElementById('admin-login-overlay').style.display='none'}
+function doLogin(){
+  const u=document.getElementById('admin-user').value.trim(),p=document.getElementById('admin-pass').value.trim();
+  if(u===ADMIN_USER&&p===ADMIN_PASS){sessionStorage.setItem(SESSION_KEY,'1');closeLogin();showAdminPanel()}
+  else{document.getElementById('login-error').style.display='block';document.getElementById('admin-pass').value=''}
+}
+function logout(){sessionStorage.removeItem(SESSION_KEY);document.getElementById('admin-panel').style.display='none';document.getElementById('form-view').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
+
+// ── ADMIN PANEL ──
+function showAdminPanel(){
+  document.getElementById('form-view').style.display='none';
+  document.getElementById('admin-panel').style.display='block';
+  renderAdmin();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderAdmin(){
+  const all=loadResponses();
+  const count=fn=>Object.entries(all.reduce((a,r)=>{const v=r[fn]||'Sin dato';a[v]=(a[v]||0)+1;return a},{}));
+  const sectors=count('Sector'),provs=count('Provincia'),inv=count('Inversión mensual'),emp=count('Empleados');
+  const topS=sectors.sort((a,b)=>b[1]-a[1])[0];
+  const topP=provs.sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('admin-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${all.length}</div><div class="stat-lbl">Total respuestas</div></div>
+    <div class="stat-card"><div class="stat-num">${[...new Set(all.map(r=>r['Sector']))].filter(Boolean).length}</div><div class="stat-lbl">Sectores distintos</div></div>
+    <div class="stat-card"><div class="stat-num" style="font-size:1rem">${topS?topS[0]:'—'}</div><div class="stat-lbl">Sector líder</div></div>
+    <div class="stat-card"><div class="stat-num" style="font-size:1rem">${topP?topP[0]:'—'}</div><div class="stat-lbl">Provincia líder</div></div>`;
+
+  const COLORS=['#2563eb','#7c3aed','#16a34a','#ea580c','#0891b2','#db2777','#65a30d','#9333ea','#0284c7','#dc2626'];
+  function makeChart(id,label,data,type='doughnut'){
+    if(chartInstances[id])chartInstances[id].destroy();
+    const labels=data.map(d=>d[0]),values=data.map(d=>d[1]);
+    const ctx=document.getElementById(id);
+    if(!ctx||!labels.length)return;
+    chartInstances[id]=new Chart(ctx,{type,data:{labels,datasets:[{data:values,backgroundColor:COLORS,borderWidth:2,borderColor:'white'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}}}});
+  }
+  setTimeout(()=>{
+    makeChart('chart-sector','Sector',sectors.slice(0,6));
+    makeChart('chart-prov','Provincia',provs.slice(0,7));
+    makeChart('chart-inv','Inversión',inv,'bar');
+    makeChart('chart-emp','Empleados',emp);
+  },100);
+
+  const wrap=document.getElementById('responses-table');
+  if(!all.length){wrap.innerHTML='<div class="empty-msg">📭 Aún no hay respuestas.</div>';return}
+  const cols=['Fecha/Hora','Nombre negocio','Sector','Provincia','Nombre contacto','WhatsApp contacto','Correo contacto'];
+  let html='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th></th></tr></thead><tbody>';
+  all.forEach((r,i)=>{html+='<tr>'+cols.map(c=>`<td title="${r[c]||''}">${r[c]||'—'}</td>`).join('')+`<td><span class="badge" onclick="showDetail(${i})">Ver todo</span></td></tr>`});
+  wrap.innerHTML=html+'</tbody></table>';
+}
+
+function showDetail(i){
+  const r=loadResponses()[i];
+  document.getElementById('detail-content').innerHTML=Object.entries(r).map(([k,v])=>`<div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${v||'—'}</span></div>`).join('');
+  document.getElementById('detail-modal').style.display='flex';
 }
 
 function downloadExcel(){
   const all=loadResponses();
   if(!all.length){showToast('No hay respuestas aún',true);return}
   const ws=XLSX.utils.json_to_sheet(all);
-  ws['!cols']=Object.keys(all[0]).map(k=>({wch:Math.max(k.length+4,22)}));
+  ws['!cols']=Object.keys(all[0]).map(k=>({wch:Math.max(k.length+4,24)}));
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Respuestas');
-  XLSX.writeFile(wb,`Diagnostico_Digital_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb,`GlenSoto_Diagnostico_${new Date().toISOString().slice(0,10)}.xlsx`);
   showToast('📥 Excel descargado');
 }
 
 function clearData(){
-  if(!confirm('¿Eliminar TODAS las respuestas? Esta acción no se puede deshacer.'))return;
-  localStorage.removeItem(STORE_KEY);renderAdminPanel();showToast('🗑 Datos eliminados');
+  if(!confirm('¿Eliminar TODAS las respuestas? No se puede deshacer.'))return;
+  localStorage.removeItem(STORE_KEY);renderAdmin();showToast('🗑 Datos eliminados');
 }
 
+// ── INIT ──
+initDots();updateProgress(1);
 if(sessionStorage.getItem(SESSION_KEY))showAdminPanel();
 </script>
 </body>
