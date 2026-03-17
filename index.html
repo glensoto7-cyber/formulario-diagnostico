@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico Digital PyME</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:20px}
+.container{max-width:720px;margin:0 auto}
+header{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border-radius:14px;padding:28px 32px;margin-bottom:24px;text-align:center}
+header h1{font-size:1.5rem;margin-bottom:6px}
+header p{opacity:.85;font-size:.9rem}
+.section{background:white;border-radius:12px;padding:24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.section-title{font-size:1.05rem;font-weight:700;color:#1e3a5f;border-left:4px solid #2563eb;padding-left:12px;margin-bottom:20px}
+.q-block{margin-bottom:20px}
+.q-label{display:block;font-weight:600;color:#2d3748;margin-bottom:8px;font-size:.92rem}
+.req{color:#e53e3e;margin-left:2px}
+input[type=text],input[type=email],input[type=tel],input[type=password],textarea,select{width:100%;padding:10px 13px;border:1.5px solid #dde3eb;border-radius:8px;font-size:.92rem;color:#333;transition:border .2s;font-family:inherit}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#2563eb}
+textarea{resize:vertical;min-height:80px}
+.radio-group,.check-group{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:center;gap:10px;padding:9px 13px;border:1.5px solid #dde3eb;border-radius:8px;cursor:pointer;transition:all .2s;font-size:.9rem;color:#333}
+.opt:hover{border-color:#2563eb;background:#eff6ff}
+.opt input{width:auto;flex-shrink:0;accent-color:#2563eb}
+.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .2s}
+.btn-submit:hover{opacity:.9}
+.divider{height:1px;background:#e5e7eb;margin:16px 0}
+.toast{position:fixed;top:20px;right:20px;background:#16a34a;color:white;padding:14px 22px;border-radius:10px;font-weight:600;font-size:.9rem;display:none;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.error{background:#dc2626}
+#admin-login-overlay{position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.login-box{background:white;border-radius:16px;padding:36px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h2{color:#1e3a5f;font-size:1.3rem;margin-bottom:6px}
+.login-box p{color:#64748b;font-size:.85rem;margin-bottom:24px}
+.login-box input{margin-bottom:14px}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer}
+.btn-login:hover{opacity:.9}
+.login-error{color:#dc2626;font-size:.82rem;margin-top:8px;display:none}
+.btn-back-form{background:none;border:none;color:#2563eb;font-size:.85rem;cursor:pointer;margin-top:14px;text-decoration:underline}
+#admin-panel{display:none}
+.admin-header{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;border-radius:14px;padding:24px 28px;margin-bottom:20px}
+.admin-header h2{font-size:1.2rem;margin-bottom:4px}
+.admin-header p{opacity:.7;font-size:.82rem}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:white;border-radius:10px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.stat-card .num{font-size:2rem;font-weight:800;color:#2563eb}
+.stat-card .lbl{font-size:.78rem;color:#64748b;margin-top:2px}
+.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.btn-excel{background:#16a34a;color:white;border:none;border-radius:8px;padding:11px 20px;font-size:.9rem;font-weight:700;cursor:pointer;flex:1;min-width:160px}
+.btn-excel:hover{background:#15803d}
+.btn-clear{background:#dc2626;color:white;border:none;border-radius:8px;padding:11px 16px;font-size:.9rem;font-weight:700;cursor:pointer}
+.btn-clear:hover{background:#b91c1c}
+.btn-logout{background:#475569;color:white;border:none;border-radius:8px;padding:11px 16px;font-size:.9rem;font-weight:700;cursor:pointer}
+.btn-logout:hover{background:#334155}
+.responses-table-wrap{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow-x:auto}
+.responses-table-wrap h3{color:#1e3a5f;font-size:.95rem;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:#1e3a5f;color:white;padding:9px 12px;text-align:left;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:hover td{background:#f8fafc}
+.empty-msg{text-align:center;color:#94a3b8;padding:30px;font-size:.9rem}
+.badge{display:inline-block;background:#eff6ff;color:#2563eb;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:700}
+.admin-link{text-align:center;margin-top:10px;margin-bottom:20px}
+.admin-link button{background:none;border:none;color:#94a3b8;font-size:.78rem;cursor:pointer;text-decoration:underline}
+.admin-link button:hover{color:#2563eb}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div id="admin-login-overlay" style="display:none">
+  <div class="login-box">
+    <div style="font-size:2rem;margin-bottom:10px">🔐</div>
+    <h2>Panel de Administración</h2>
+    <p>Ingresa tus credenciales para acceder a las respuestas</p>
+    <input type="text" id="admin-user" placeholder="Usuario" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="password" id="admin-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+    <br>
+    <button class="btn-back-form" onclick="closeLoginOverlay()">← Volver al formulario</button>
+  </div>
+</div>
+
+<div id="admin-panel" class="container">
+  <div class="admin-header">
+    <h2>🛡️ Panel de Administración</h2>
+    <p>Gestiona y descarga todas las respuestas del formulario de diagnóstico</p>
+  </div>
+  <div class="admin-stats" id="admin-stats"></div>
+  <div class="admin-actions">
+    <button class="btn-excel" onclick="downloadExcel()">📥 Descargar todas en Excel</button>
+    <button class="btn-clear" onclick="clearData()">🗑 Limpiar datos</button>
+    <button class="btn-logout" onclick="logout()">🚪 Cerrar sesión</button>
+  </div>
+  <div class="responses-table-wrap">
+    <h3>📋 Respuestas recibidas</h3>
+    <div id="responses-table-content"></div>
+  </div>
+</div>
+
+<div id="form-view" class="container">
+
+<header>
+  <h1>🔍 Diagnóstico Digital para Negocios</h1>
+  <p>Este formulario nos ayuda a entender mejor tu negocio y cómo podemos apoyarte con tecnología.</p>
+</header>
+
+<div class="section">
+  <div class="section-title">Sección 1 — Datos Generales</div>
+  <div class="q-block">
+    <label class="q-label">1. Nombre del negocio <span class="req">*</span></label>
+    <input type="text" id="q1" placeholder="Ej. Soda La Familiar">
+  </div>
+  <div class="q-block">
+    <label class="q-label">2. Sector <span class="req">*</span></label>
+    <select id="q2">
+      <option value="">— Seleccione —</option>
+      <option>Soda/Restaurante</option><option>Salón de Belleza/Estética</option>
+      <option>Ferretería/Materiales</option><option>Clínica/Salud</option>
+      <option>Servicios Legales/Contables</option><option>Comercio de Ropa/Calzado</option>
+      <option>Taller/Mecánica</option><option>Turismo/Hospedaje</option>
+      <option>Agro/Ganadería</option><option>Otro</option>
+    </select>
+  </div>
+  <div class="q-block">
+    <label class="q-label">3. Provincia <span class="req">*</span></label>
+    <select id="q3">
+      <option value="">— Seleccione —</option>
+      <option>San José</option><option>Alajuela</option><option>Cartago</option>
+      <option>Heredia</option><option>Guanacaste</option><option>Puntarenas</option><option>Limón</option>
+    </select>
+  </div>
+  <div class="q-block">
+    <label class="q-label">4. Cantidad de empleados <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q4" value="Solo yo"> Solo yo</label>
+      <label class="opt"><input type="radio" name="q4" value="2–5"> 2–5</label>
+      <label class="opt"><input type="radio" name="q4" value="6–15"> 6–15</label>
+      <label class="opt"><input type="radio" name="q4" value="Más de 15"> Más de 15</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">5. ¿Están al día con factura electrónica? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q5" value="Sí"> Sí</label>
+      <label class="opt"><input type="radio" name="q5" value="No"> No</label>
+      <label class="opt"><input type="radio" name="q5" value="En proceso"> En proceso</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">6. Canales de venta actuales (puede marcar varios)</label>
+    <div class="check-group" id="q6">
+      <label class="opt"><input type="checkbox" value="WhatsApp Business"> WhatsApp Business</label>
+      <label class="opt"><input type="checkbox" value="Instagram"> Instagram</label>
+      <label class="opt"><input type="checkbox" value="Facebook"> Facebook</label>
+      <label class="opt"><input type="checkbox" value="Sitio web"> Sitio web</label>
+      <label class="opt"><input type="checkbox" value="Punto físico"> Punto físico</label>
+      <label class="opt"><input type="checkbox" value="Telefónico"> Telefónico</label>
+      <label class="opt"><input type="checkbox" value="Uber Eats/Rappi"> Uber Eats/Rappi</label>
+      <label class="opt"><input type="checkbox" value="Mercado en línea"> Mercado en línea</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">7. Herramientas digitales que usan hoy (puede marcar varios)</label>
+    <div class="check-group" id="q7">
+      <label class="opt"><input type="checkbox" value="Excel/Google Sheets"> Excel/Google Sheets</label>
+      <label class="opt"><input type="checkbox" value="Sistema contable"> Sistema contable</label>
+      <label class="opt"><input type="checkbox" value="POS/caja registradora"> POS/caja registradora</label>
+      <label class="opt"><input type="checkbox" value="Ninguna"> Ninguna</label>
+      <label class="opt"><input type="checkbox" value="Otra"> Otra</label>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Sección 2 — Operación Diaria</div>
+  <div class="q-block">
+    <label class="q-label">8. ¿Cuánto tiempo dedica diariamente a responder clientes por WhatsApp? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q8" value="Menos de 1 hora"> Menos de 1 hora</label>
+      <label class="opt"><input type="radio" name="q8" value="1–3 horas"> 1–3 horas</label>
+      <label class="opt"><input type="radio" name="q8" value="Más de 3 horas"> Más de 3 horas</label>
+      <label class="opt"><input type="radio" name="q8" value="No tengo tiempo suficiente"> No tengo tiempo suficiente</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">9. ¿Cómo coordinan citas o pedidos? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q9" value="WhatsApp manual"> WhatsApp manual</label>
+      <label class="opt"><input type="radio" name="q9" value="Llamada telefónica"> Llamada telefónica</label>
+      <label class="opt"><input type="radio" name="q9" value="Hoja de papel/agenda"> Hoja de papel/agenda</label>
+      <label class="opt"><input type="radio" name="q9" value="Sistema digital"> Sistema digital</label>
+      <label class="opt"><input type="radio" name="q9" value="Sin proceso definido"> Sin proceso definido</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">10. ¿Cuántas consultas o mensajes reciben por semana? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q10" value="Menos de 30"> Menos de 30</label>
+      <label class="opt"><input type="radio" name="q10" value="30–100"> 30–100</label>
+      <label class="opt"><input type="radio" name="q10" value="100–300"> 100–300</label>
+      <label class="opt"><input type="radio" name="q10" value="Más de 300"> Más de 300</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">11. ¿Emiten facturas o cotizaciones manualmente? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q11" value="Sí, todo manual"> Sí, todo manual</label>
+      <label class="opt"><input type="radio" name="q11" value="Usamos sistema pero tarda"> Usamos sistema pero tarda</label>
+      <label class="opt"><input type="radio" name="q11" value="Está automatizado"> Está automatizado</label>
+      <label class="opt"><input type="radio" name="q11" value="No emitimos"> No emitimos</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">12. ¿Cuántas horas semanales se pierden en tareas repetitivas? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q12" value="Menos de 5"> Menos de 5</label>
+      <label class="opt"><input type="radio" name="q12" value="5–15"> 5–15</label>
+      <label class="opt"><input type="radio" name="q12" value="15–30"> 15–30</label>
+      <label class="opt"><input type="radio" name="q12" value="Más de 30"> Más de 30</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">13. ¿Tienen datos históricos de ventas o clientes guardados? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q13" value="Sí, ordenados"> Sí, ordenados</label>
+      <label class="opt"><input type="radio" name="q13" value="Sí pero desordenados"> Sí pero desordenados</label>
+      <label class="opt"><input type="radio" name="q13" value="Muy pocos"> Muy pocos</label>
+      <label class="opt"><input type="radio" name="q13" value="No guardamos nada"> No guardamos nada</label>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Sección 3 — Dolores y Frustraciones</div>
+  <div class="q-block">
+    <label class="q-label">14. ¿Cuál es el problema que más le quita el sueño en su negocio hoy? <span class="req">*</span></label>
+    <textarea id="q14" placeholder="Descríbalo con sus propias palabras..."></textarea>
+  </div>
+  <div class="q-block">
+    <label class="q-label">15. ¿Cuántos clientes potenciales cree que pierde por no responder a tiempo? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q15" value="Casi ninguno"> Casi ninguno</label>
+      <label class="opt"><input type="radio" name="q15" value="1–5 por semana"> 1–5 por semana</label>
+      <label class="opt"><input type="radio" name="q15" value="Más de 5 por semana"> Más de 5 por semana</label>
+      <label class="opt"><input type="radio" name="q15" value="No lo sé pero sospecho que muchos"> No lo sé pero sospecho que muchos</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">16. ¿En qué etapa pierde más clientes? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q16" value="No me encuentran"> No me encuentran</label>
+      <label class="opt"><input type="radio" name="q16" value="Me contactan pero no respondo rápido"> Me contactan pero no respondo rápido</label>
+      <label class="opt"><input type="radio" name="q16" value="Les cotizo pero no cierran"> Les cotizo pero no cierran</label>
+      <label class="opt"><input type="radio" name="q16" value="No hay seguimiento posventa"> No hay seguimiento posventa</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">17. ¿Han tenido problemas con Hacienda, CCSS u otras instituciones? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q17" value="Sí, varias veces"> Sí, varias veces</label>
+      <label class="opt"><input type="radio" name="q17" value="Una vez"> Una vez</label>
+      <label class="opt"><input type="radio" name="q17" value="No, llevamos buen control"> No, llevamos buen control</label>
+      <label class="opt"><input type="radio" name="q17" value="Preferimos no responder"> Preferimos no responder</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">18. Si tuviera un asistente 24/7, ¿en qué lo pondría primero? (puede marcar varios)</label>
+    <div class="check-group" id="q18">
+      <label class="opt"><input type="checkbox" value="Responder WhatsApp"> Responder WhatsApp</label>
+      <label class="opt"><input type="checkbox" value="Agendar citas"> Agendar citas</label>
+      <label class="opt"><input type="checkbox" value="Dar precios e información"> Dar precios e información</label>
+      <label class="opt"><input type="checkbox" value="Cobrar y confirmar pagos SINPE"> Cobrar y confirmar pagos SINPE</label>
+      <label class="opt"><input type="checkbox" value="Publicar en redes"> Publicar en redes</label>
+      <label class="opt"><input type="checkbox" value="Generar reportes"> Generar reportes</label>
+      <label class="opt"><input type="checkbox" value="Dar seguimiento a clientes"> Dar seguimiento a clientes</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">19. ¿Qué tarea quisieran que se hiciera sola? <span class="req">*</span></label>
+    <textarea id="q19" placeholder="Descríbala..."></textarea>
+  </div>
+  <div class="q-block">
+    <label class="q-label">20. ¿Sus competidores hacen algo mejor que ustedes? <span style="color:#888;font-weight:400">(opcional)</span></label>
+    <textarea id="q20" placeholder="Opcional..."></textarea>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Sección 4 — Datos que Genera el Negocio</div>
+  <div class="q-block">
+    <label class="q-label">21. ¿Qué tipo de datos genera su negocio actualmente? (puede marcar varios)</label>
+    <div class="check-group" id="q21">
+      <label class="opt"><input type="checkbox" value="Ventas diarias"> Ventas diarias</label>
+      <label class="opt"><input type="checkbox" value="Lista de clientes"> Lista de clientes</label>
+      <label class="opt"><input type="checkbox" value="Historial de pedidos"> Historial de pedidos</label>
+      <label class="opt"><input type="checkbox" value="Citas o reservas"> Citas o reservas</label>
+      <label class="opt"><input type="checkbox" value="Inventario de productos"> Inventario de productos</label>
+      <label class="opt"><input type="checkbox" value="Pagos recibidos por SINPE"> Pagos recibidos por SINPE</label>
+      <label class="opt"><input type="checkbox" value="Consultas y mensajes de WhatsApp"> Consultas y mensajes de WhatsApp</label>
+      <label class="opt"><input type="checkbox" value="Publicaciones en redes sociales"> Publicaciones en redes sociales</label>
+      <label class="opt"><input type="checkbox" value="Quejas o reclamos"> Quejas o reclamos</label>
+      <label class="opt"><input type="checkbox" value="Ninguno de forma organizada"> Ninguno de forma organizada</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">22. ¿Dónde guardan esa información hoy? (puede marcar varios)</label>
+    <div class="check-group" id="q22">
+      <label class="opt"><input type="checkbox" value="En mi cabeza o la de un empleado"> En mi cabeza o la de un empleado</label>
+      <label class="opt"><input type="checkbox" value="Hojas de papel o cuadernos"> Hojas de papel o cuadernos</label>
+      <label class="opt"><input type="checkbox" value="Excel o Google Sheets"> Excel o Google Sheets</label>
+      <label class="opt"><input type="checkbox" value="Sistema de caja o POS"> Sistema de caja o POS</label>
+      <label class="opt"><input type="checkbox" value="Google Drive o similar"> Google Drive o similar</label>
+      <label class="opt"><input type="checkbox" value="WhatsApp o chats"> WhatsApp o chats</label>
+      <label class="opt"><input type="checkbox" value="No la guardamos"> No la guardamos</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">23. ¿Con qué frecuencia revisan o analizan esos datos? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q23" value="Nunca"> Nunca</label>
+      <label class="opt"><input type="radio" name="q23" value="Solo cuando hay un problema"> Solo cuando hay un problema</label>
+      <label class="opt"><input type="radio" name="q23" value="Una vez al mes"> Una vez al mes</label>
+      <label class="opt"><input type="radio" name="q23" value="Semanalmente"> Semanalmente</label>
+      <label class="opt"><input type="radio" name="q23" value="Diariamente"> Diariamente</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">24. ¿Saben cuál es su producto o servicio más rentable? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q24" value="Sí, lo sabemos con claridad"> Sí, lo sabemos con claridad</label>
+      <label class="opt"><input type="radio" name="q24" value="Lo intuimos pero no lo hemos calculado"> Lo intuimos pero no lo hemos calculado</label>
+      <label class="opt"><input type="radio" name="q24" value="No lo sabemos"> No lo sabemos</label>
+      <label class="opt"><input type="radio" name="q24" value="Nunca lo hemos analizado"> Nunca lo hemos analizado</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">25. ¿Tienen identificados a sus clientes más frecuentes o de mayor valor? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q25" value="Sí, los conocemos bien"> Sí, los conocemos bien</label>
+      <label class="opt"><input type="radio" name="q25" value="Más o menos, por memoria"> Más o menos, por memoria</label>
+      <label class="opt"><input type="radio" name="q25" value="No, no llevamos ese registro"> No, no llevamos ese registro</label>
+      <label class="opt"><input type="radio" name="q25" value="No habíamos pensado en eso"> No habíamos pensado en eso</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">26. ¿Cuánto tiempo tarda en saber cuánto vendió la semana pasada? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q26" value="Lo sé al instante"> Lo sé al instante</label>
+      <label class="opt"><input type="radio" name="q26" value="Unas horas de cálculo"> Unas horas de cálculo</label>
+      <label class="opt"><input type="radio" name="q26" value="Uno o dos días"> Uno o dos días</label>
+      <label class="opt"><input type="radio" name="q26" value="No lo calculo regularmente"> No lo calculo regularmente</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">27. ¿Han perdido información importante por no tenerla respaldada? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q27" value="Sí, nos ha pasado"> Sí, nos ha pasado</label>
+      <label class="opt"><input type="radio" name="q27" value="Una vez leve"> Una vez leve</label>
+      <label class="opt"><input type="radio" name="q27" value="No, todo está respaldado"> No, todo está respaldado</label>
+      <label class="opt"><input type="radio" name="q27" value="No tenemos nada que respaldar"> No tenemos nada que respaldar</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">28. Si tuvieran todos sus datos organizados automáticamente, ¿qué decisión tomarían primero? <span class="req">*</span></label>
+    <textarea id="q28" placeholder="Esta respuesta es muy importante para nosotros..."></textarea>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Sección 5 — Personas y Cultura</div>
+  <div class="q-block">
+    <label class="q-label">29. ¿Cómo describirían la actitud de su equipo ante la tecnología? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q29" value="Muy abiertos"> Muy abiertos</label>
+      <label class="opt"><input type="radio" name="q29" value="Algunos sí otros no"> Algunos sí otros no</label>
+      <label class="opt"><input type="radio" name="q29" value="Con desconfianza pero dispuestos"> Con desconfianza pero dispuestos</label>
+      <label class="opt"><input type="radio" name="q29" value="Resistencia fuerte"> Resistencia fuerte</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">30. ¿Han intentado implementar tecnología antes? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q30" value="Sí y funcionó"> Sí y funcionó</label>
+      <label class="opt"><input type="radio" name="q30" value="Sí pero no pegó"> Sí pero no pegó</label>
+      <label class="opt"><input type="radio" name="q30" value="Informalmente"> Informalmente</label>
+      <label class="opt"><input type="radio" name="q30" value="Primera vez"> Primera vez</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">31. ¿Quién toma decisiones tecnológicas? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q31" value="Yo solo"> Yo solo</label>
+      <label class="opt"><input type="radio" name="q31" value="Yo con socio/a"> Yo con socio/a</label>
+      <label class="opt"><input type="radio" name="q31" value="Hay un encargado"> Hay un encargado</label>
+      <label class="opt"><input type="radio" name="q31" value="Nadie lo tiene claro"> Nadie lo tiene claro</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">32. ¿Cuánto tiempo disponible al mes para aprender e implementar algo nuevo? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q32" value="Menos de 2h"> Menos de 2h</label>
+      <label class="opt"><input type="radio" name="q32" value="2–5h"> 2–5h</label>
+      <label class="opt"><input type="radio" name="q32" value="5–10h"> 5–10h</label>
+      <label class="opt"><input type="radio" name="q32" value="Tengo disponibilidad"> Tengo disponibilidad</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">33. ¿Tienen contratado algún servicio tecnológico? (puede marcar varios)</label>
+    <div class="check-group" id="q33">
+      <label class="opt"><input type="checkbox" value="Hosting/web"> Hosting/web</label>
+      <label class="opt"><input type="checkbox" value="Software contable"> Software contable</label>
+      <label class="opt"><input type="checkbox" value="CRM"> CRM</label>
+      <label class="opt"><input type="checkbox" value="Email marketing"> Email marketing</label>
+      <label class="opt"><input type="checkbox" value="CCTV"> CCTV</label>
+      <label class="opt"><input type="checkbox" value="Ninguno"> Ninguno</label>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Sección 6 — Inversión y Expectativas</div>
+  <div class="q-block">
+    <label class="q-label">34. ¿Tienen presupuesto para tecnología este año? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q34" value="Sí definido"> Sí definido</label>
+      <label class="opt"><input type="radio" name="q34" value="Hay si vemos el valor"> Hay si vemos el valor</label>
+      <label class="opt"><input type="radio" name="q34" value="Muy limitado"> Muy limitado</label>
+      <label class="opt"><input type="radio" name="q34" value="No hemos pensado"> No hemos pensado</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">35. ¿Cuánto invertirían mensualmente en una solución que ahorre tiempo y genere datos útiles? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q35" value="Menos de ₡30.000"> Menos de ₡30.000</label>
+      <label class="opt"><input type="radio" name="q35" value="₡30.000–₡80.000"> ₡30.000–₡80.000</label>
+      <label class="opt"><input type="radio" name="q35" value="₡80.000–₡200.000"> ₡80.000–₡200.000</label>
+      <label class="opt"><input type="radio" name="q35" value="Más de ₡200.000 si el retorno es claro"> Más de ₡200.000 si el retorno es claro</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">36. ¿Cuál resultado haría que esto valiera la pena? <span class="req">*</span></label>
+    <textarea id="q36" placeholder="Descríbalo..."></textarea>
+  </div>
+  <div class="q-block">
+    <label class="q-label">37. ¿En cuánto tiempo esperarían ver resultados? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q37" value="1 mes"> 1 mes</label>
+      <label class="opt"><input type="radio" name="q37" value="1–3 meses"> 1–3 meses</label>
+      <label class="opt"><input type="radio" name="q37" value="3–6 meses"> 3–6 meses</label>
+      <label class="opt"><input type="radio" name="q37" value="No tengo expectativa clara"> No tengo expectativa clara</label>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="q-block">
+    <label class="q-label">38. Nombre de quien completa el formulario <span class="req">*</span></label>
+    <input type="text" id="q38" placeholder="Nombre completo">
+  </div>
+  <div class="q-block">
+    <label class="q-label">39. WhatsApp <span class="req">*</span></label>
+    <input type="tel" id="q39" placeholder="Ej. 8888-8888">
+  </div>
+  <div class="q-block">
+    <label class="q-label">40. Correo electrónico <span class="req">*</span></label>
+    <input type="email" id="q40" placeholder="correo@ejemplo.com">
+  </div>
+  <button class="btn-submit" onclick="submitForm()">✅ Enviar Formulario</button>
+</div>
+
+<div class="admin-link">
+  <button onclick="showLoginOverlay()">🔐 Acceso administrador</button>
+</div>
+
+</div>
+
+<script>
+const ADMIN_USER  = 'admin';
+const ADMIN_PASS  = 'DigiPyme2025';
+const STORE_KEY   = 'diagnostico_pyme_v2';
+const SESSION_KEY = 'admin_session_active';
+const SHEET_URL   = 'https://script.google.com/macros/s/AKfycbxJNsMABH4BZ8d48Qex17wbMNSvGhcqWOrRpVJV38_JlmYh3j_w7w9UA5MLdXKcRWTE/exec';
+
+function showLoginOverlay(){document.getElementById('admin-login-overlay').style.display='flex';document.getElementById('admin-user').value='';document.getElementById('admin-pass').value='';document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('admin-user').focus(),100)}
+function closeLoginOverlay(){document.getElementById('admin-login-overlay').style.display='none'}
+function doLogin(){const u=document.getElementById('admin-user').value.trim(),p=document.getElementById('admin-pass').value.trim();if(u===ADMIN_USER&&p===ADMIN_PASS){sessionStorage.setItem(SESSION_KEY,'1');document.getElementById('admin-login-overlay').style.display='none';showAdminPanel()}else{document.getElementById('login-error').style.display='block';document.getElementById('admin-pass').value=''}}
+function logout(){sessionStorage.removeItem(SESSION_KEY);document.getElementById('admin-panel').style.display='none';document.getElementById('form-view').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
+
+function showAdminPanel(){document.getElementById('form-view').style.display='none';document.getElementById('admin-panel').style.display='block';renderAdminPanel();window.scrollTo({top:0,behavior:'smooth'})}
+
+function renderAdminPanel(){
+  const all=loadResponses();
+  const sectors={},provs={};
+  all.forEach(r=>{if(r['Sector'])sectors[r['Sector']]=(sectors[r['Sector']]||0)+1;if(r['Provincia'])provs[r['Provincia']]=(provs[r['Provincia']]||0)+1});
+  const topS=Object.entries(sectors).sort((a,b)=>b[1]-a[1])[0];
+  const topP=Object.entries(provs).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('admin-stats').innerHTML=`
+    <div class="stat-card"><div class="num">${all.length}</div><div class="lbl">Respuestas totales</div></div>
+    <div class="stat-card"><div class="num">${Object.keys(sectors).length}</div><div class="lbl">Sectores distintos</div></div>
+    <div class="stat-card"><div class="num" style="font-size:1.1rem">${topS?topS[0]:'—'}</div><div class="lbl">Sector más frecuente</div></div>
+    <div class="stat-card"><div class="num" style="font-size:1.1rem">${topP?topP[0]:'—'}</div><div class="lbl">Provincia más frecuente</div></div>`;
+  const wrap=document.getElementById('responses-table-content');
+  if(!all.length){wrap.innerHTML='<div class="empty-msg">📭 Aún no hay respuestas registradas.</div>';return}
+  const cols=['Fecha/Hora','Nombre negocio','Sector','Provincia','Empleados','Nombre contacto','WhatsApp contacto','Correo contacto'];
+  let html='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>Detalles</th></tr></thead><tbody>';
+  all.forEach((r,i)=>{html+='<tr>'+cols.map(c=>`<td title="${r[c]||''}">${r[c]||'—'}</td>`).join('')+`<td><span class="badge" style="cursor:pointer" onclick="showDetail(${i})">Ver todo</span></td></tr>`});
+  html+='</tbody></table>';
+  wrap.innerHTML=html;
+}
+
+function showDetail(i){const r=loadResponses()[i];alert(Object.entries(r).map(([k,v])=>`${k}:\n${v||'—'}`).join('\n\n'))}
+
+function loadResponses(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]')}catch{return[]}}
+function saveResponses(arr){localStorage.setItem(STORE_KEY,JSON.stringify(arr))}
+function getRadio(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:''}
+function getChecks(id){return[...document.querySelectorAll(`#${id} input[type=checkbox]:checked`)].map(c=>c.value).join(', ')}
+function val(id){return(document.getElementById(id)?.value||'').trim()}
+function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' error':'');t.style.display='block';setTimeout(()=>t.style.display='none',3500)}
+
+const REQUIRED_FIELDS={
+  'Nombre negocio':()=>val('q1'),'Sector':()=>val('q2'),'Provincia':()=>val('q3'),
+  'Empleados':()=>getRadio('q4'),'Factura electrónica':()=>getRadio('q5'),
+  'Tiempo WhatsApp':()=>getRadio('q8'),'Coordinación':()=>getRadio('q9'),
+  'Consultas/semana':()=>getRadio('q10'),'Facturación':()=>getRadio('q11'),
+  'Horas perdidas':()=>getRadio('q12'),'Datos históricos':()=>getRadio('q13'),
+  'Problema principal':()=>val('q14'),'Clientes perdidos':()=>getRadio('q15'),
+  'Etapa pérdida':()=>getRadio('q16'),'Problemas institucionales':()=>getRadio('q17'),
+  'Tarea sola':()=>val('q19'),'Frecuencia análisis':()=>getRadio('q23'),
+  'Producto rentable':()=>getRadio('q24'),'Clientes frecuentes':()=>getRadio('q25'),
+  'Tiempo ventas':()=>getRadio('q26'),'Pérdida info':()=>getRadio('q27'),
+  'Decisión con datos':()=>val('q28'),'Actitud equipo':()=>getRadio('q29'),
+  'Tecnología previa':()=>getRadio('q30'),'Decisor TI':()=>getRadio('q31'),
+  'Tiempo disponible':()=>getRadio('q32'),'Presupuesto':()=>getRadio('q34'),
+  'Inversión mensual':()=>getRadio('q35'),'Resultado esperado':()=>val('q36'),
+  'Tiempo resultados':()=>getRadio('q37'),'Nombre contacto':()=>val('q38'),
+  'WhatsApp':()=>val('q39'),'Correo':()=>val('q40'),
+};
+
+function collectData(){
+  return{
+    'Fecha/Hora':new Date().toLocaleString('es-CR'),
+    'Nombre negocio':val('q1'),'Sector':val('q2'),'Provincia':val('q3'),
+    'Empleados':getRadio('q4'),'Factura electrónica':getRadio('q5'),
+    'Canales de venta':getChecks('q6'),'Herramientas digitales':getChecks('q7'),
+    'Tiempo WhatsApp diario':getRadio('q8'),'Coordinación citas/pedidos':getRadio('q9'),
+    'Consultas por semana':getRadio('q10'),'Facturación/cotizaciones':getRadio('q11'),
+    'Horas perdidas semana':getRadio('q12'),'Datos históricos':getRadio('q13'),
+    'Problema principal':val('q14'),'Clientes perdidos por tiempo':getRadio('q15'),
+    'Etapa donde pierde clientes':getRadio('q16'),'Problemas Hacienda/CCSS':getRadio('q17'),
+    'Asistente 24/7 usaría para':getChecks('q18'),'Tarea que se hiciera sola':val('q19'),
+    'Competidores hacen mejor':val('q20'),
+    'Datos que genera':getChecks('q21'),'Dónde guarda datos':getChecks('q22'),
+    'Frecuencia análisis':getRadio('q23'),'Producto más rentable':getRadio('q24'),
+    'Clientes frecuentes identificados':getRadio('q25'),'Tiempo conocer ventas':getRadio('q26'),
+    'Perdida de información':getRadio('q27'),'Decisión con datos organizados':val('q28'),
+    'Actitud equipo tecnología':getRadio('q29'),'Implementación tecnología previa':getRadio('q30'),
+    'Quién decide tecnología':getRadio('q31'),'Tiempo disponible mensual':getRadio('q32'),
+    'Servicios tecnológicos contratados':getChecks('q33'),
+    'Presupuesto tecnología':getRadio('q34'),'Inversión mensual':getRadio('q35'),
+    'Resultado esperado':val('q36'),'Tiempo para ver resultados':getRadio('q37'),
+    'Nombre contacto':val('q38'),'WhatsApp contacto':val('q39'),'Correo contacto':val('q40'),
+  };
+}
+
+async function submitForm(){
+  for(const[label,fn]of Object.entries(REQUIRED_FIELDS)){
+    if(!fn()){showToast(`⚠️ Campo requerido: "${label}"`,true);return}
+  }
+  const data=collectData();
+  const all=loadResponses();all.push(data);saveResponses(all);
+  const btn=document.querySelector('.btn-submit');
+  btn.disabled=true;btn.textContent='⏳ Enviando...';
+  try{
+    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    showToast('✅ Respuesta enviada correctamente. ¡Gracias!');
+  }catch(err){
+    showToast('⚠️ Guardado localmente. Sin conexión a la nube.',true);
+  }
+  btn.disabled=false;btn.textContent='✅ Enviar Formulario';
+  resetForm();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetForm(){
+  document.querySelectorAll('input[type=text],input[type=email],input[type=tel],textarea,select').forEach(el=>{if(el.tagName==='SELECT')el.selectedIndex=0;else el.value=''});
+  document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(el=>el.checked=false);
+}
+
+function downloadExcel(){
+  const all=loadResponses();
+  if(!all.length){showToast('No hay respuestas aún',true);return}
+  const ws=XLSX.utils.json_to_sheet(all);
+  ws['!cols']=Object.keys(all[0]).map(k=>({wch:Math.max(k.length+4,22)}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Respuestas');
+  XLSX.writeFile(wb,`Diagnostico_Digital_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('📥 Excel descargado');
+}
+
+function clearData(){
+  if(!confirm('¿Eliminar TODAS las respuestas? Esta acción no se puede deshacer.'))return;
+  localStorage.removeItem(STORE_KEY);renderAdminPanel();showToast('🗑 Datos eliminados');
+}
+
+if(sessionStorage.getItem(SESSION_KEY))showAdminPanel();
+</script>
+</body>
+</html>
