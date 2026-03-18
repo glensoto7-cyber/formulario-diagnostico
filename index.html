@@ -193,18 +193,50 @@ tr:hover td{background:#f8fafc}
 <div class="section active" id="sec1">
   <div class="sec-header"><div class="sec-title">📋 Datos Generales</div><span class="sec-badge">1 / 9</span></div>
   <div class="q-block">
-    <label class="q-label">1. Nombre del negocio <span class="req">*</span></label>
+    <label class="q-label">1. ¿Cuál es el principal objetivo de su negocio para los próximos 6 meses? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q0a" value="Crecer en ventas"> Crecer en ventas</label>
+      <label class="opt"><input type="radio" name="q0a" value="Reducir costos"> Reducir costos</label>
+      <label class="opt"><input type="radio" name="q0a" value="Mejorar atención al cliente"> Mejorar atención al cliente</label>
+      <label class="opt"><input type="radio" name="q0a" value="Ordenar procesos internos"> Ordenar procesos internos</label>
+      <label class="opt"><input type="radio" name="q0a" value="Todo lo anterior"> Todo lo anterior</label>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">2. Nombre del negocio <span class="req">*</span></label>
     <input type="text" id="q1" placeholder="Ej. Soda La Familiar">
   </div>
   <div class="q-block">
     <label class="q-label">2. Sector <span class="req">*</span></label>
     <select id="q2">
       <option value="">— Seleccione —</option>
-      <option>Soda/Restaurante</option><option>Salón de Belleza/Estética</option>
-      <option>Ferretería/Materiales</option><option>Clínica/Salud</option>
-      <option>Servicios Legales/Contables</option><option>Comercio de Ropa/Calzado</option>
-      <option>Taller/Mecánica</option><option>Turismo/Hospedaje</option>
-      <option>Agro/Ganadería</option><option>Tecnología</option><option>Otro</option>
+      <option>Soda/Restaurante</option>
+      <option>Salón de Belleza/Estética</option>
+      <option>Barbería</option>
+      <option>Uñas/Pestañas/Extensiones</option>
+      <option>Maquillaje/Micropigmentación</option>
+      <option>Masajes/Spa/Relajación</option>
+      <option>Ferretería/Materiales</option>
+      <option>Clínica/Salud</option>
+      <option>Farmacia/Veterinaria</option>
+      <option>Servicios Legales/Contables</option>
+      <option>Comercio de Ropa/Calzado</option>
+      <option>Taller/Mecánica</option>
+      <option>Taller de Computadoras/Electrónica</option>
+      <option>Turismo/Hospedaje</option>
+      <option>Agro/Ganadería</option>
+      <option>Tecnología</option>
+      <option>Educación/Academia/Cursos</option>
+      <option>Gimnasio/Bienestar/Spa</option>
+      <option>Construcción/Arquitectura</option>
+      <option>Transporte/Logística/Mensajería</option>
+      <option>Bienes Raíces/Propiedades</option>
+      <option>Fotografía/Diseño/Creativos</option>
+      <option>Eventos/Catering/Bodas</option>
+      <option>Importación/Exportación/Comercio</option>
+      <option>Joyería/Accesorios/Artesanía</option>
+      <option>ONG/Asociación/Fundación</option>
+      <option>Otro</option>
     </select>
   </div>
   <div class="q-block">
@@ -254,6 +286,17 @@ tr:hover td{background:#f8fafc}
       <label class="opt"><input type="checkbox" value="Ninguna"> Ninguna</label>
       <label class="opt"><input type="checkbox" value="Otra" onchange="toggleOtro(this,'otro_q7')"> Otra</label>
       <div class="otro-field" id="otro_q7"><input type="text" id="otro_q7_txt" placeholder="¿Cuál herramienta?"></div>
+    </div>
+  </div>
+  <div class="q-block">
+    <label class="q-label">64. ¿Cómo se enteró de Glen Soto — IA para Empresas? <span class="req">*</span></label>
+    <div class="radio-group">
+      <label class="opt"><input type="radio" name="q64" value="Referido por alguien"> Referido por alguien</label>
+      <label class="opt"><input type="radio" name="q64" value="Redes sociales"> Redes sociales</label>
+      <label class="opt"><input type="radio" name="q64" value="Google"> Google</label>
+      <label class="opt"><input type="radio" name="q64" value="WhatsApp"> WhatsApp</label>
+      <label class="opt"><input type="radio" name="q64" value="Evento o conferencia"> Evento o conferencia</label>
+      <label class="opt"><input type="radio" name="q64" value="Otro"> Otro</label>
     </div>
   </div>
   <div class="nav-btns"><button class="btn-next" onclick="nextSec(1)">Siguiente →</button></div>
